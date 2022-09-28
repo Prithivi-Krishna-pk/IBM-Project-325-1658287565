@@ -5,7 +5,7 @@ import ibm_db
 
 def connection():
     try:
-        conn = ibm_db.connect("DATABASE=bludb;HOSTNAME=b70af05b-76e4-4bca-a1f5-23dbb4c6a74e.c1ogj3sd0tgtu0lqde00.databases.appdomain.cloud;\
+        conn = ibm_db.connect("DATABASE=bludb;HOSTNAME=764264db-9824-4b7c-82df-40d1b13897c2.bs2io90l08kqb1od8lcg.databases.appdomain.cloud;\
             PORT=32716;PROTOCOL=TCPIP;UID=cyp26260;PWD=2u8Lfagovgh630DH;SECURITY=SSL;SSLServiceCertificate=DigiCertGlobalRootCA.crt", "", "")
         print("Connected to Database")
         return conn
