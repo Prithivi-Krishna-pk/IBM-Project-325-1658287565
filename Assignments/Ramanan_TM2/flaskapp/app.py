@@ -5,8 +5,8 @@ import ibm_db
 
 def connection():
     try:
-        conn = ibm_db.connect("DATABASE=bludb;HOSTNAME=764264db-9824-4b7c-82df-40d1b13897c2.bs2io90l08kqb1od8lcg.databases.appdomain.cloud;\
-            PORT=32716;PROTOCOL=TCPIP;UID=cyp26260;PWD=2u8Lfagovgh630DH;SECURITY=SSL;SSLServiceCertificate=DigiCertGlobalRootCA.crt", "", "")
+        conn = ibm_db.connect("DATABASE=bludb;HOSTNAME=ea286ace-86c7-4d5b-8580-3fbfa46b1c66.bs2io90l08kqb1od8lcg.databases.appdomain.cloud;\
+            PORT=31505;PROTOCOL=TCPIP;UID=jvw46423;PWD=k5ePKBbQGv4oIoR1;SECURITY=SSL;SSLServiceCertificate=DigiCertGlobalRootCA.crt", "", "")
         print("Connected to Database")
         return conn
     except:
