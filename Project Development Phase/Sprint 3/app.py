@@ -112,5 +112,105 @@ def addrec():
             return redirect(url_for('login', success="Registration Successfull"))
 
 
+@app.route('/dashboard')
+@login_required
+def dashboard():
+
+    # Expense Details SQL
+    expensedetails = []
+    sql = "SELECT AMOUNT,DETAILS,CHAR(DATE(DANDT),USA) AS DATEADDED, CHAR(TIME(DANDT),USA) AS TIMEADDED FROM USERDATA WHERE USERID = ?"
+    stmt = ibm_db.prepare(conn, sql)
+    ibm_db.bind_param(stmt, 1, current_user.user_json['PERSONID'])
+    ibm_db.execute(stmt)
+    details = ibm_db.fetch_assoc(stmt)
+    while details != False:
+        expensedetails.append(details)
+        details = ibm_db.fetch_assoc(stmt)
+
+    label = [row['DATEADDED'] for row in expensedetails]
+    amountlabel = [row['AMOUNT'] for row in expensedetails]
+
+    # Totalexpense SQL
+    sql2 = "SELECT SUM(AMOUNT) AS TOTALVAL FROM USERDATA WHERE USERID = ?"
+    stmt2 = ibm_db.prepare(conn, sql2)
+    ibm_db.bind_param(stmt2, 1, current_user.user_json['PERSONID'])
+    ibm_db.execute(stmt2)
+    totalexpense = ibm_db.fetch_assoc(stmt2)
+    if totalexpense['TOTALVAL'] is None:
+        totalexpense['TOTALVAL'] = 0
+
+    # walletbalance SQL
+    sql3 = "SELECT SUM(WALLETAMOUNT) AS TOTALVAL FROM WALLET WHERE WALLETID = ?"
+    stmt3 = ibm_db.prepare(conn, sql3)
+    ibm_db.bind_param(stmt3, 1, current_user.user_json['PERSONID'])
+    ibm_db.execute(stmt3)
+    walletbalance = ibm_db.fetch_assoc(stmt3)
+    if walletbalance['TOTALVAL'] is None:
+        walletbalance['TOTALVAL'] = 0
+        availablebalance = 0
+    else:
+        availablebalance = int(
+            walletbalance['TOTALVAL']) - int(totalexpense['TOTALVAL'])
+    if (availablebalance <= 50):
+        flash("Your balance is too low!!!")
+    elif (availablebalance > 50 and availablebalance <= 200):
+        flash("Your balance is getting low so take care of your expenses...!!!")
+
+    return render_template('dashboard.html', dashboard='active', name=current_user.user_json['FIRSTNAME'], success=request.args.get('success'), danger=request.args.get('danger'), expensedetails=expensedetails, totalexpense=totalexpense['TOTALVAL'], walletbalance=availablebalance, label=label, amountlabel=amountlabel)
+
+
+@app.route('/addexpense/<balance>', methods=['POST'])
+@login_required
+def addexpense(balance):
+    amount = request.form['amount']
+    detail = request.form['details']
+
+    if (int(amount) == 0):
+        return redirect(url_for('dashboard', danger="Please enter some amount"))
+
+    else:
+        sql = "INSERT INTO USERDATA(USERID,AMOUNT,DETAILS) VALUES(?,?,?)"
+        stmt = ibm_db.prepare(conn, sql)
+        ibm_db.bind_param(stmt, 1, current_user.user_json['PERSONID'])
+        ibm_db.bind_param(stmt, 2, amount)
+        ibm_db.bind_param(stmt, 3, detail)
+        ibm_db.execute(stmt)
+
+        return redirect(url_for('dashboard', success="Expense added successfully"))
+
+
+@app.route('/addmoney', methods=['POST'])
+@login_required
+def addmoney():
+    amount = request.form['walletamount']
+
+    if (int(amount) == 0):
+        return redirect(url_for('dashboard', danger="Please enter some amount"))
+
+    else:
+        sql = "INSERT INTO WALLET(WALLETID,WALLETAMOUNT) VALUES(?,?)"
+        stmt = ibm_db.prepare(conn, sql)
+        ibm_db.bind_param(stmt, 1, current_user.user_json['PERSONID'])
+        ibm_db.bind_param(stmt, 2, amount)
+        ibm_db.execute(stmt)
+
+        return redirect(url_for('dashboard', success="Money added successfully"))
+
+
+# Delete
+@app.route('/deleteexpense/<val>/<amount>')
+@login_required
+def deleteexpense(val, amount):
+
+    sql = "DELETE USERDATA WHERE USERID=? AND CHAR(TIME(DANDT),USA)= ? AND AMOUNT=?"
+    stmt = ibm_db.prepare(conn, sql)
+    ibm_db.bind_param(stmt, 1, current_user.user_json['PERSONID'])
+    ibm_db.bind_param(stmt, 2, val)
+    ibm_db.bind_param(stmt, 3, amount)
+    ibm_db.execute(stmt)
+
+    return redirect(url_for('dashboard', success="Deleted Successfully"))
+
+
 if __name__ == "__main__":
     app.run()
