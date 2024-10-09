@@ -16,7 +16,3 @@ IBM Cloud, HTML, Javascript, IBM Cloud Object Storage, Python-Flask, Kubernetes,
 
 ## 🤹‍♀️ TEAM MEMBERS
 
-- Sadhana
-- Abirami
-- Winson Dass
-- Ramanan
